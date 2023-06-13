@@ -1,23 +1,8 @@
 import path from "path";
-let envName = ".dev.env";
-switch (process.env.NODE_ENV) {
-  case "PRODUCTION":
-    envName = ".prod.env";
-    break;
-  case "DEVELOPMENT":
-    envName = ".dev.env";
-    break;
-  case "TEST":
-    envName = ".test.env";
-    break;
-  default:
-    envName = ".dev.env";
-}
-require("dotenv").config({ path: path.resolve(__dirname, "..", envName) });
+import { config } from "./config";
 import express, { Request, Response, Express } from "express";
 import cors from "cors";
 import database from "./db/Database";
-import { config } from "./config";
 import { errorController } from "./controllers";
 import routes from "./routes";
 import cookieParser from "cookie-parser";
@@ -63,3 +48,5 @@ database
   .catch((err: Error) => {
     console.log(`[SERVER][ERROR]: `, err);
   });
+
+export default app;

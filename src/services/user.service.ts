@@ -7,10 +7,10 @@ import { IRequest, IUser } from "../types";
 
 /**
  * create User from body
- * @param {Object} body
+ * @param {IUser} body
  * @returns {Promise<User>}
  */
-export const createUser = async (body: typeof User): Promise<IUser> => {
+export const createUser = async (body: Partial<IUser>): Promise<IUser> => {
   const user = new User(body);
   return user.save();
 };
@@ -22,7 +22,7 @@ export const createUser = async (body: typeof User): Promise<IUser> => {
  */
 export const uploadProfileImage = async (
   url: string,
-  user: IUser
+  user: Partial<IUser>
 ): Promise<IUser> => {
   user.profileUrl = url;
   return user.save();
@@ -77,7 +77,7 @@ export const getUserById = async (
  */
 export const updateUserById = async (
   id: string,
-  body: typeof User,
+  body: Partial<IUser>,
   filters: Object = {}
 ): Promise<IUser> => {
   const user = await User.findOneAndUpdate({ _id: id, ...filters }, body, {
@@ -97,7 +97,7 @@ export const updateUserById = async (
  */
 export const updateUserProfile = async (
   user: IUser,
-  body: typeof User
+  body: Partial<IUser>
 ): Promise<IUser> => {
   const updates = Object.keys(body);
   updates.forEach((update) => {
