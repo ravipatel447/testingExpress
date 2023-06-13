@@ -6,8 +6,9 @@
   "type": "commonjs",
   "scripts": {
     "build": "tsc",
-    "start": "node src/server.ts",
-    "dev": "nodemon src/server.ts"
+    "start": "npm run build && NODE_ENV=PRODUCTION node dist/server.js",
+    "dev": "NODE_ENV=DEVELOPMENT nodemon src/server.ts",
+    "test": "NODE_ENV=TEST"
   },
   "keywords": [],
   "author": "",
