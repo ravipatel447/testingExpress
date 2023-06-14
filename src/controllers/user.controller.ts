@@ -31,7 +31,10 @@ export const updateUserProfile = catchAsync(
 
 export const uploadUserAvatar = catchAsync(
   async (req: IRequest, res: Response) => {
-    const user = await userService.uploadProfileImage(req.file.path, req.user);
+    const user = await userService.uploadProfileImage(
+      req.file.path.split("/")[2],
+      req.user
+    );
     return response.successResponse(
       res,
       CREATED,
@@ -45,7 +48,7 @@ export const removeAvatar = catchAsync(async (req: IRequest, res: Response) => {
   const user = await userService.removeProfileImage(req.user);
   return response.successResponse(
     res,
-    CREATED,
+    OK,
     { user },
     userMessages.success.USER_PROFILE_REMOVE_SUCCESS
   );

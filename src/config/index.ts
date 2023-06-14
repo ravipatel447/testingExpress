@@ -1,3 +1,21 @@
+import path from "path";
+let envName = ".dev.env";
+switch (process.env.NODE_ENV) {
+  case "PRODUCTION":
+    envName = ".prod.env";
+    break;
+  case "DEVELOPMENT":
+    envName = ".dev.env";
+    break;
+  case "TEST":
+    envName = ".test.env";
+    break;
+  default:
+    envName = ".dev.env";
+}
+require("dotenv").config({
+  path: path.resolve(__dirname, "..", "..", envName),
+});
 export const config = {
   mongodb: {
     url: process.env.MONGODB_URL,

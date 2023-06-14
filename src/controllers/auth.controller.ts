@@ -1,4 +1,4 @@
-import { OK, CREATED } from "http-status";
+import { OK, CREATED, BAD_REQUEST } from "http-status";
 import { User } from "../models";
 import { userService, tokenService } from "../services";
 import { userMessages } from "../messages";
@@ -22,6 +22,15 @@ export const loginUser = catchAsync(async (req: Request, res: Response) => {
 
 export const registerUser = catchAsync(async (req: Request, res: Response) => {
   const { body } = req;
+  const checkEmail = await userService.getUserByFilter({ email: body.email });
+  if (checkEmail) {
+    return response.errorResponse(
+      res,
+      BAD_REQUEST,
+      {},
+      userMessages.error.USER_ALLREADY_EXIST
+    );
+  }
   const user = await userService.createUser(body);
   const token = await tokenService.generateUserToken(user);
   return response.successResponse(
