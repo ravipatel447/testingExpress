@@ -41,9 +41,11 @@ database
   ._connect()
   .then(() => {
     console.log("DataBase Connected Successfully");
-    app.listen(port, () => {
-      console.log(`[SERVER][START]: http://localhost:${port}/`);
-    });
+    if (process.env.NODE_ENV !== "TEST") {
+      app.listen(port, () => {
+        console.log(`[SERVER][START]: http://localhost:${port}/`);
+      });
+    }
   })
   .catch((err: Error) => {
     console.log(`[SERVER][ERROR]: `, err);

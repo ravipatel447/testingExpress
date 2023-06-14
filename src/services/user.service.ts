@@ -4,6 +4,8 @@ import { User } from "../models";
 import { ApiError } from "../utils/ApiError";
 import { userMessages } from "../messages";
 import { IRequest, IUser } from "../types";
+import fs from "fs";
+import path from "path";
 
 /**
  * create User from body
@@ -32,7 +34,8 @@ export const uploadProfileImage = async (
  * @param {Object} user user Object
  * @returns {Promise<User>}
  */
-export const removeProfileImage = async (user: IUser): Promise<IUser> => {
+export const removeProfileImage = async (user: IUser) => {
+  deletePreviousAvatar(user._id);
   user.profileUrl = "https://i.stack.imgur.com/l60Hf.png";
   return user.save();
 };
@@ -116,11 +119,32 @@ export const deleteUserById = async (
   id: String,
   filters: Object = {}
 ): Promise<IUser> => {
+  deletePreviousAvatar(id);
   const user = await User.findOneAndRemove({ _id: id, ...filters });
   if (!user) {
     throw new ApiError(userMessages.error.USER_NOT_FOUND, BAD_REQUEST);
   }
   return user;
+};
+
+const deletePreviousAvatar = (userId: String) => {
+  const directory = path.join(__dirname, "..", "..", "Assets", "Avatar"); // Specify the directory where the file is located
+  const filenameWithoutExt = `Avatar-${userId}`;
+  fs.readdir(directory, (err, files) => {
+    if (err) {
+      return;
+    }
+    // Find the file by matching the filename without the extension
+    const file = files.find((file) => {
+      const fileWithoutExt = path.parse(file).name;
+      return fileWithoutExt === filenameWithoutExt;
+    });
+
+    if (file) {
+      const filePath = path.join(directory, file);
+      fs.unlink(filePath, () => {});
+    }
+  });
 };
 
 const storage = multer.diskStorage({
@@ -129,6 +153,7 @@ const storage = multer.diskStorage({
   },
   filename: function (req: IRequest, file: Express.Multer.File, cb: Function) {
     const userId = req.user._id;
+    deletePreviousAvatar(userId);
     const mimetype = file.mimetype.split("/")[1];
     cb(null, file.fieldname + "-" + userId + "." + mimetype);
   },
