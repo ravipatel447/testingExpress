@@ -1,4 +1,4 @@
-import { BAD_REQUEST } from "http-status";
+import { BAD_REQUEST, UNAUTHORIZED } from "http-status";
 import jwt from "jsonwebtoken";
 import { User } from "../models";
 import { config } from "../config";
@@ -26,13 +26,17 @@ export const generateUserToken = async (user: IUser): Promise<string> => {
  * @returns {Promise<IUser>}
  */
 export const verifyToken = async (token: string): Promise<IUser> => {
-  let { user } = jwt.verify(token, config.jwt.secret);
-  user = await User.findOne({
-    _id: user,
-    "tokens.token": token,
-  });
-  if (!user) {
-    throw new ApiError(tokenMessages.error.INVALID_TOKEN, BAD_REQUEST);
+  try {
+    let { user } = jwt.verify(token, config.jwt.secret);
+    user = await User.findOne({
+      _id: user,
+      "tokens.token": token,
+    });
+    if (!user) {
+      throw new Error();
+    }
+    return user;
+  } catch (error) {
+    throw new ApiError(tokenMessages.error.INVALID_TOKEN, UNAUTHORIZED);
   }
-  return user;
 };

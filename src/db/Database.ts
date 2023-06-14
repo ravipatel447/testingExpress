@@ -13,6 +13,10 @@ class Database {
     console.log(this.fullUrl);
     return mongoose.connect(this.fullUrl);
   }
+  _disconnect() {
+    // console.log(this.fullUrl);
+    return mongoose.disconnect();
+  }
 }
 
 const database: Database = new Database();
