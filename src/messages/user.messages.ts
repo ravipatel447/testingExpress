@@ -2,6 +2,7 @@ export const userMessages = {
   error: {
     USER_NOT_FOUND: "user not found!",
     INVALID_UPDATES: "Invalid Updates",
+    USER_ALLREADY_EXIST: "user with this is already exist",
   },
   success: {
     USER_LOGIN_SUCCESS: "user logged in successfully!",

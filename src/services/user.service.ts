@@ -4,13 +4,15 @@ import { User } from "../models";
 import { ApiError } from "../utils/ApiError";
 import { userMessages } from "../messages";
 import { IRequest, IUser } from "../types";
+import fs from "fs";
+import path from "path";
 
 /**
  * create User from body
- * @param {Object} body
+ * @param {IUser} body
  * @returns {Promise<User>}
  */
-export const createUser = async (body: typeof User): Promise<IUser> => {
+export const createUser = async (body: Partial<IUser>): Promise<IUser> => {
   const user = new User(body);
   return user.save();
 };
@@ -22,7 +24,7 @@ export const createUser = async (body: typeof User): Promise<IUser> => {
  */
 export const uploadProfileImage = async (
   url: string,
-  user: IUser
+  user: Partial<IUser>
 ): Promise<IUser> => {
   user.profileUrl = url;
   return user.save();
@@ -32,7 +34,8 @@ export const uploadProfileImage = async (
  * @param {Object} user user Object
  * @returns {Promise<User>}
  */
-export const removeProfileImage = async (user: IUser): Promise<IUser> => {
+export const removeProfileImage = async (user: IUser) => {
+  deletePreviousAvatar(user._id);
   user.profileUrl = "https://i.stack.imgur.com/l60Hf.png";
   return user.save();
 };
@@ -77,7 +80,7 @@ export const getUserById = async (
  */
 export const updateUserById = async (
   id: string,
-  body: typeof User,
+  body: Partial<IUser>,
   filters: Object = {}
 ): Promise<IUser> => {
   const user = await User.findOneAndUpdate({ _id: id, ...filters }, body, {
@@ -97,7 +100,7 @@ export const updateUserById = async (
  */
 export const updateUserProfile = async (
   user: IUser,
-  body: typeof User
+  body: Partial<IUser>
 ): Promise<IUser> => {
   const updates = Object.keys(body);
   updates.forEach((update) => {
@@ -116,11 +119,32 @@ export const deleteUserById = async (
   id: String,
   filters: Object = {}
 ): Promise<IUser> => {
+  deletePreviousAvatar(id);
   const user = await User.findOneAndRemove({ _id: id, ...filters });
   if (!user) {
     throw new ApiError(userMessages.error.USER_NOT_FOUND, BAD_REQUEST);
   }
   return user;
+};
+
+const deletePreviousAvatar = (userId: String) => {
+  const directory = path.join(__dirname, "..", "..", "Assets", "Avatar"); // Specify the directory where the file is located
+  const filenameWithoutExt = `Avatar-${userId}`;
+  fs.readdir(directory, (err, files) => {
+    if (err) {
+      return;
+    }
+    // Find the file by matching the filename without the extension
+    const file = files.find((file) => {
+      const fileWithoutExt = path.parse(file).name;
+      return fileWithoutExt === filenameWithoutExt;
+    });
+
+    if (file) {
+      const filePath = path.join(directory, file);
+      fs.unlink(filePath, () => {});
+    }
+  });
 };
 
 const storage = multer.diskStorage({
@@ -129,6 +153,7 @@ const storage = multer.diskStorage({
   },
   filename: function (req: IRequest, file: Express.Multer.File, cb: Function) {
     const userId = req.user._id;
+    deletePreviousAvatar(userId);
     const mimetype = file.mimetype.split("/")[1];
     cb(null, file.fieldname + "-" + userId + "." + mimetype);
   },
