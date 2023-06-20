@@ -7,7 +7,7 @@ class Database {
   database = config.mongodb.database;
 
   get fullUrl() {
-    return `${this.url}:${this.port}/${this.database}`;
+    return `${this.url}:${this.port}/${this.database}?authSource=admin`;
   }
   _connect() {
     console.log(this.fullUrl);
