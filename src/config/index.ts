@@ -18,7 +18,9 @@ require("dotenv").config({
 });
 export const config = {
   mongodb: {
-    url: process.env.MONGODB_URL,
+    url: `mongodb://${process.env.MONGODB_USERNAME || ""}:${
+      process.env.MONGODB_PASSWORD || ""
+    }@${process.env.MONGODB_HOST}`,
     port: process.env.MONGODB_PORT,
     database: process.env.MONGODB_DATABASE,
   },
